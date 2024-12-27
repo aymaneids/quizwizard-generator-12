@@ -1,17 +1,13 @@
 import React from 'react';
 import TextInput from '@/components/TextInput';
-import QuizQuestion, { Question } from '@/components/QuizQuestion';
-import QuizResults from '@/components/QuizResults';
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/components/ui/use-toast";
+import QuizContainer from '@/components/QuizContainer';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import { Question } from '@/components/QuizQuestion';
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [questions, setQuestions] = React.useState<Question[]>([]);
-  const [currentQuestion, setCurrentQuestion] = React.useState(0);
-  const [answers, setAnswers] = React.useState<(number | null)[]>([]);
-  const [showResults, setShowResults] = React.useState(false);
   const { toast } = useToast();
 
   const generateQuestions = async (text: string) => {
@@ -62,7 +58,7 @@ Remember:
       }
 
       const json = await response.json();
-      console.log('API Response:', json); // Debug log
+      console.log('API Response:', json);
       
       if (!json.choices?.[0]?.message?.content) {
         throw new Error('Invalid API response format');
@@ -71,15 +67,13 @@ Remember:
       let generatedQuestions;
       try {
         const content = json.choices[0].message.content;
-        console.log('Raw content:', content); // Debug log
+        console.log('Raw content:', content);
         
-        // Try to extract JSON if the response contains additional text
         const jsonMatch = content.match(/\[[\s\S]*\]/);
         const jsonString = jsonMatch ? jsonMatch[0] : content;
         
         generatedQuestions = JSON.parse(jsonString);
         
-        // Validate the response format
         if (!Array.isArray(generatedQuestions) || !generatedQuestions.every(q => 
           typeof q.question === 'string' &&
           Array.isArray(q.options) &&
@@ -96,9 +90,6 @@ Remember:
       }
       
       setQuestions(generatedQuestions);
-      setAnswers(new Array(generatedQuestions.length).fill(null));
-      setCurrentQuestion(0);
-      setShowResults(false);
     } catch (error) {
       console.error('Error generating questions:', error);
       toast({
@@ -111,31 +102,8 @@ Remember:
     }
   };
 
-  const handleAnswer = (answerIndex: number) => {
-    const newAnswers = [...answers];
-    newAnswers[currentQuestion] = answerIndex;
-    setAnswers(newAnswers);
-  };
-
-  const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(curr => curr + 1);
-    } else {
-      setShowResults(true);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(curr => curr - 1);
-    }
-  };
-
   const handleRestart = () => {
     setQuestions([]);
-    setAnswers([]);
-    setCurrentQuestion(0);
-    setShowResults(false);
   };
 
   if (questions.length === 0) {
@@ -143,21 +111,14 @@ Remember:
       <div className="min-h-screen p-6 flex flex-col items-center justify-center">
         <div className="w-full max-w-2xl">
           <h1 className="text-3xl font-bold text-center mb-8">Quiz Generator</h1>
-          <TextInput onGenerate={generateQuestions} isLoading={isLoading} />
-        </div>
-      </div>
-    );
-  }
-
-  if (showResults) {
-    return (
-      <div className="min-h-screen p-6">
-        <div className="max-w-2xl mx-auto">
-          <QuizResults
-            questions={questions}
-            answers={answers}
-            onRestart={handleRestart}
-          />
+          {isLoading ? (
+            <div className="space-y-4">
+              <LoadingSpinner />
+              <p className="text-center text-gray-500">Generating your quiz questions...</p>
+            </div>
+          ) : (
+            <TextInput onGenerate={generateQuestions} isLoading={isLoading} />
+          )}
         </div>
       </div>
     );
@@ -165,36 +126,7 @@ Remember:
 
   return (
     <div className="min-h-screen p-6">
-      <div className="max-w-2xl mx-auto space-y-6">
-        <Progress value={(currentQuestion + 1) / questions.length * 100} />
-        
-        <div className="text-sm text-center text-gray-500">
-          Question {currentQuestion + 1} of {questions.length}
-        </div>
-
-        <QuizQuestion
-          question={questions[currentQuestion]}
-          currentAnswer={answers[currentQuestion]}
-          onAnswer={handleAnswer}
-          showCorrect={false}
-        />
-
-        <div className="flex justify-between gap-4">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentQuestion === 0}
-          >
-            Previous
-          </Button>
-          <Button
-            onClick={handleNext}
-            disabled={answers[currentQuestion] === null}
-          >
-            {currentQuestion === questions.length - 1 ? 'Finish' : 'Next'}
-          </Button>
-        </div>
-      </div>
+      <QuizContainer questions={questions} onRestart={handleRestart} />
     </div>
   );
 };

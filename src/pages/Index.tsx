@@ -28,7 +28,7 @@ const Index = () => {
           messages: [
             {
               role: 'user',
-              content: `Generate 20 multiple choice questions based on this text: "${text}". Format the response as a JSON array with objects containing: question (string), options (array of 4 strings), and correctAnswer (number 0-3 indicating the correct option index).`
+              content: `Generate 20 multiple choice questions based on this text: "${text}". Format your response as a JSON array with objects containing: question (string), options (array of 4 strings), and correctAnswer (number 0-3 indicating the correct option index). Example format: [{"question": "What is...?", "options": ["A", "B", "C", "D"], "correctAnswer": 2}]`
             }
           ],
           max_tokens: 2048,
@@ -38,8 +38,35 @@ const Index = () => {
         }),
       });
 
+      if (!response.ok) {
+        throw new Error('Failed to fetch from API');
+      }
+
       const json = await response.json();
-      const generatedQuestions = JSON.parse(json.choices[0].message.content);
+      
+      if (!json.choices?.[0]?.message?.content) {
+        throw new Error('Invalid API response format');
+      }
+
+      let generatedQuestions;
+      try {
+        generatedQuestions = JSON.parse(json.choices[0].message.content);
+        
+        // Validate the response format
+        if (!Array.isArray(generatedQuestions) || !generatedQuestions.every(q => 
+          typeof q.question === 'string' &&
+          Array.isArray(q.options) &&
+          q.options.length === 4 &&
+          typeof q.correctAnswer === 'number' &&
+          q.correctAnswer >= 0 &&
+          q.correctAnswer <= 3
+        )) {
+          throw new Error('Invalid questions format');
+        }
+      } catch (parseError) {
+        console.error('Parse error:', parseError);
+        throw new Error('Failed to parse questions from API response');
+      }
       
       setQuestions(generatedQuestions);
       setAnswers(new Array(generatedQuestions.length).fill(null));

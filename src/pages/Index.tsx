@@ -17,6 +17,25 @@ const Index = () => {
   const generateQuestions = async (text: string) => {
     setIsLoading(true);
     try {
+      const prompt = `Based on the following text, create 20 multiple choice questions for a quiz. Each question should have exactly 4 options with only one correct answer. Format your response as a valid JSON array where each question object has these exact fields: "question" (string), "options" (array of 4 strings), and "correctAnswer" (number 0-3 indicating the index of the correct option).
+
+Example format:
+[{
+  "question": "What is...?",
+  "options": ["Option A", "Option B", "Option C", "Option D"],
+  "correctAnswer": 2
+}]
+
+Text to generate questions from:
+${text}
+
+Remember:
+1. Generate exactly 20 questions
+2. Each question must have exactly 4 options
+3. The correctAnswer must be a number between 0 and 3
+4. Response must be a valid JSON array
+5. Questions should test understanding of the provided text`;
+
       const response = await fetch('https://api.hyperbolic.xyz/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -28,7 +47,7 @@ const Index = () => {
           messages: [
             {
               role: 'user',
-              content: `Generate 20 multiple choice questions based on this text: "${text}". Format your response as a JSON array with objects containing: question (string), options (array of 4 strings), and correctAnswer (number 0-3 indicating the correct option index). Example format: [{"question": "What is...?", "options": ["A", "B", "C", "D"], "correctAnswer": 2}]`
+              content: prompt
             }
           ],
           max_tokens: 2048,
@@ -43,6 +62,7 @@ const Index = () => {
       }
 
       const json = await response.json();
+      console.log('API Response:', json); // Debug log
       
       if (!json.choices?.[0]?.message?.content) {
         throw new Error('Invalid API response format');
@@ -50,7 +70,14 @@ const Index = () => {
 
       let generatedQuestions;
       try {
-        generatedQuestions = JSON.parse(json.choices[0].message.content);
+        const content = json.choices[0].message.content;
+        console.log('Raw content:', content); // Debug log
+        
+        // Try to extract JSON if the response contains additional text
+        const jsonMatch = content.match(/\[[\s\S]*\]/);
+        const jsonString = jsonMatch ? jsonMatch[0] : content;
+        
+        generatedQuestions = JSON.parse(jsonString);
         
         // Validate the response format
         if (!Array.isArray(generatedQuestions) || !generatedQuestions.every(q => 

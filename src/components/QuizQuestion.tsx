@@ -34,13 +34,7 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
             <div
               key={index}
               className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
-                showCorrect && currentAnswer !== null
-                  ? index === question.correctAnswer
-                    ? 'bg-green-100 border border-green-200'
-                    : currentAnswer === index
-                    ? 'bg-red-100 border border-red-200'
-                    : 'hover:bg-muted/50'
-                  : 'hover:bg-muted/50'
+                currentAnswer === index ? 'bg-muted border border-primary' : 'hover:bg-muted/50'
               }`}
             >
               <RadioGroupItem value={index.toString()} id={`option-${index}`} />

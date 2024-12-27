@@ -14,33 +14,24 @@ const QuizContainer = ({ questions, onRestart }: QuizContainerProps) => {
   const [currentQuestion, setCurrentQuestion] = React.useState(0);
   const [answers, setAnswers] = React.useState<(number | null)[]>(new Array(questions.length).fill(null));
   const [showResults, setShowResults] = React.useState(false);
-  const [showCorrect, setShowCorrect] = React.useState(false);
 
   const handleAnswer = (answerIndex: number) => {
     const newAnswers = [...answers];
     newAnswers[currentQuestion] = answerIndex;
     setAnswers(newAnswers);
-    setShowCorrect(false);
   };
 
   const handleNext = () => {
-    setShowCorrect(true);
     if (currentQuestion < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestion(curr => curr + 1);
-        setShowCorrect(false);
-      }, 1500);
+      setCurrentQuestion(curr => curr + 1);
     } else {
-      setTimeout(() => {
-        setShowResults(true);
-      }, 1500);
+      setShowResults(true);
     }
   };
 
   const handlePrevious = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion(curr => curr - 1);
-      setShowCorrect(false);
     }
   };
 
@@ -72,7 +63,7 @@ const QuizContainer = ({ questions, onRestart }: QuizContainerProps) => {
         question={questions[currentQuestion]}
         currentAnswer={answers[currentQuestion]}
         onAnswer={handleAnswer}
-        showCorrect={showCorrect}
+        showCorrect={false}
       />
 
       <div className="flex justify-between gap-4">

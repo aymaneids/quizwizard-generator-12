@@ -23,8 +23,8 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
   showCorrect
 }) => {
   return (
-    <Card className="p-6 space-y-4">
-      <h3 className="text-lg font-semibold">{question.question}</h3>
+    <Card className="p-6 space-y-4 shadow-lg border-2">
+      <h3 className="text-xl font-semibold text-primary">{question.question}</h3>
       <RadioGroup
         value={currentAnswer?.toString()}
         onValueChange={(value) => onAnswer(parseInt(value))}
@@ -33,18 +33,21 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
           {question.options.map((option, index) => (
             <div
               key={index}
-              className={`flex items-center space-x-2 p-2 rounded ${
-                showCorrect
+              className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                showCorrect && currentAnswer !== null
                   ? index === question.correctAnswer
-                    ? 'bg-green-100'
+                    ? 'bg-green-100 border border-green-200'
                     : currentAnswer === index
-                    ? 'bg-red-100'
-                    : ''
-                  : ''
+                    ? 'bg-red-100 border border-red-200'
+                    : 'hover:bg-muted/50'
+                  : 'hover:bg-muted/50'
               }`}
             >
               <RadioGroupItem value={index.toString()} id={`option-${index}`} />
-              <Label htmlFor={`option-${index}`} className="flex-grow cursor-pointer">
+              <Label 
+                htmlFor={`option-${index}`} 
+                className="flex-grow cursor-pointer text-base"
+              >
                 {option}
               </Label>
             </div>

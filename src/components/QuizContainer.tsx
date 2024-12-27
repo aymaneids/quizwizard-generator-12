@@ -9,10 +9,9 @@ import { Question } from './QuizQuestion';
 interface QuizContainerProps {
   questions: Question[];
   onRestart: () => void;
-  originalText?: string;
 }
 
-const QuizContainer = ({ questions, onRestart, originalText }: QuizContainerProps) => {
+const QuizContainer = ({ questions, onRestart }: QuizContainerProps) => {
   const [currentQuestion, setCurrentQuestion] = React.useState(0);
   const [answers, setAnswers] = React.useState<(number | null)[]>(new Array(questions.length).fill(null));
   const [showResults, setShowResults] = React.useState(false);
@@ -61,11 +60,9 @@ const QuizContainer = ({ questions, onRestart, originalText }: QuizContainerProp
             Question {currentQuestion + 1} of {questions.length}
           </div>
         </div>
-        {originalText && (
-          <div className="ml-4">
-            <ShareQuiz quizContent={originalText} />
-          </div>
-        )}
+        <div className="ml-4">
+          <ShareQuiz questions={questions} />
+        </div>
       </div>
 
       <QuizQuestion

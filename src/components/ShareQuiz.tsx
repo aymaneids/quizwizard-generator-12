@@ -2,17 +2,19 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Share2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { Question } from './QuizQuestion';
 
 interface ShareQuizProps {
-  quizContent: string;
+  questions: Question[];
 }
 
-const ShareQuiz: React.FC<ShareQuizProps> = ({ quizContent }) => {
+const ShareQuiz: React.FC<ShareQuizProps> = ({ questions }) => {
   const { toast } = useToast();
 
   const handleShare = async () => {
-    const currentUrl = window.location.href;
-    const shareUrl = `${currentUrl}?quiz=${encodeURIComponent(quizContent)}`;
+    const currentUrl = window.location.href.split('?')[0]; // Get base URL without parameters
+    const questionsString = encodeURIComponent(JSON.stringify(questions));
+    const shareUrl = `${currentUrl}?sharedQuiz=${questionsString}`;
 
     if (navigator.share) {
       try {

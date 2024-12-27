@@ -9,14 +9,25 @@ import { useSearchParams } from 'react-router-dom';
 const Index = () => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [questions, setQuestions] = React.useState<Question[]>([]);
-  const [originalText, setOriginalText] = React.useState<string>('');
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
 
   React.useEffect(() => {
-    const sharedQuiz = searchParams.get('quiz');
+    const sharedQuiz = searchParams.get('sharedQuiz');
     if (sharedQuiz) {
-      generateQuestions(decodeURIComponent(sharedQuiz));
+      try {
+        const decodedQuestions = JSON.parse(decodeURIComponent(sharedQuiz));
+        if (Array.isArray(decodedQuestions) && decodedQuestions.length > 0) {
+          setQuestions(decodedQuestions);
+        }
+      } catch (error) {
+        console.error('Error parsing shared quiz:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load shared quiz",
+          variant: "destructive"
+        });
+      }
     }
   }, []);
 
@@ -100,7 +111,6 @@ Remember:
       }
       
       setQuestions(generatedQuestions);
-      setOriginalText(text);
     } catch (error) {
       console.error('Error generating questions:', error);
       toast({
@@ -115,7 +125,6 @@ Remember:
 
   const handleRestart = () => {
     setQuestions([]);
-    setOriginalText('');
     // Clear the URL parameters
     window.history.replaceState({}, '', window.location.pathname);
   };
@@ -143,7 +152,6 @@ Remember:
       <QuizContainer 
         questions={questions} 
         onRestart={handleRestart}
-        originalText={originalText}
       />
     </div>
   );

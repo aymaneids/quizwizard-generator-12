@@ -8,6 +8,7 @@ import { useSearchParams } from 'react-router-dom';
 
 const Index = () => {
   const [isLoading, setIsLoading] = React.useState(false);
+  const [loadingProgress, setLoadingProgress] = React.useState(0);
   const [questions, setQuestions] = React.useState<Question[]>([]);
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
@@ -33,6 +34,19 @@ const Index = () => {
 
   const generateQuestions = async (text: string) => {
     setIsLoading(true);
+    setLoadingProgress(0);
+    
+    // Simulate initial processing
+    const progressInterval = setInterval(() => {
+      setLoadingProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(progressInterval);
+          return 90;
+        }
+        return prev + 2;
+      });
+    }, 100);
+
     try {
       const prompt = `Based on the following text, create 20 multiple choice questions for a quiz. Each question should have exactly 4 options with only one correct answer. Format your response as a valid JSON array where each question object has these exact fields: "question" (string), "options" (array of 4 strings), and "correctAnswer" (number 0-3 indicating the index of the correct option).
 
@@ -79,7 +93,6 @@ Remember:
       }
 
       const json = await response.json();
-      console.log('API Response:', json);
       
       if (!json.choices?.[0]?.message?.content) {
         throw new Error('Invalid API response format');
@@ -88,8 +101,6 @@ Remember:
       let generatedQuestions;
       try {
         const content = json.choices[0].message.content;
-        console.log('Raw content:', content);
-        
         const jsonMatch = content.match(/\[[\s\S]*\]/);
         const jsonString = jsonMatch ? jsonMatch[0] : content;
         
@@ -110,6 +121,8 @@ Remember:
         throw new Error('Failed to parse questions from API response');
       }
       
+      // Set progress to 100% when questions are successfully generated
+      setLoadingProgress(100);
       setQuestions(generatedQuestions);
     } catch (error) {
       console.error('Error generating questions:', error);
@@ -119,7 +132,11 @@ Remember:
         variant: "destructive"
       });
     } finally {
-      setIsLoading(false);
+      clearInterval(progressInterval);
+      setTimeout(() => {
+        setIsLoading(false);
+        setLoadingProgress(0);
+      }, 500);
     }
   };
 
@@ -134,7 +151,7 @@ Remember:
         <div className="w-full max-w-2xl">
           <h1 className="text-3xl font-bold text-center mb-8">Quiz Generator</h1>
           {isLoading ? (
-            <LoadingPage />
+            <LoadingPage progress={loadingProgress} />
           ) : (
             <TextInput onGenerate={generateQuestions} isLoading={isLoading} />
           )}

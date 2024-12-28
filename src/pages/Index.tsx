@@ -1,7 +1,7 @@
 import React from 'react';
 import TextInput from '@/components/TextInput';
 import QuizContainer from '@/components/QuizContainer';
-import LoadingPage from '@/components/LoadingPage';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import { Question } from '@/components/QuizQuestion';
 import { useToast } from "@/hooks/use-toast";
 import { useSearchParams } from 'react-router-dom';
@@ -125,6 +125,7 @@ Remember:
 
   const handleRestart = () => {
     setQuestions([]);
+    // Clear the URL parameters
     window.history.replaceState({}, '', window.location.pathname);
   };
 
@@ -134,7 +135,10 @@ Remember:
         <div className="w-full max-w-2xl">
           <h1 className="text-3xl font-bold text-center mb-8">Quiz Generator</h1>
           {isLoading ? (
-            <LoadingPage />
+            <div className="space-y-4">
+              <LoadingSpinner />
+              <p className="text-center text-gray-500">Generating your quiz questions...</p>
+            </div>
           ) : (
             <TextInput onGenerate={generateQuestions} isLoading={isLoading} />
           )}

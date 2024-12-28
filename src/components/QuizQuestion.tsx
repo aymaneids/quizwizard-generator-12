@@ -23,27 +23,42 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
   showCorrect
 }) => {
   return (
-    <Card className="p-6 space-y-4 shadow-lg border-2">
-      <h3 className="text-xl font-semibold text-primary">{question.question}</h3>
+    <Card className="p-8 space-y-6 shadow-lg border-2 bg-white/50 backdrop-blur-sm">
+      <h3 className="text-2xl font-semibold text-primary leading-tight">{question.question}</h3>
       <RadioGroup
         value={currentAnswer?.toString()}
         onValueChange={(value) => onAnswer(parseInt(value))}
+        className="pt-4"
       >
-        <div className="space-y-3">
+        <div className="grid gap-4">
           {question.options.map((option, index) => (
             <div
               key={index}
-              className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
-                currentAnswer === index ? 'bg-muted border border-primary' : 'hover:bg-muted/50'
+              className={`relative transition-all duration-200 ${
+                currentAnswer === index 
+                  ? 'scale-[1.02]' 
+                  : 'hover:scale-[1.01]'
               }`}
             >
-              <RadioGroupItem value={index.toString()} id={`option-${index}`} />
-              <Label 
-                htmlFor={`option-${index}`} 
-                className="flex-grow cursor-pointer text-base"
+              <div
+                className={`flex items-center space-x-3 p-4 rounded-xl border-2 transition-colors ${
+                  currentAnswer === index 
+                    ? 'bg-primary/10 border-primary shadow-md' 
+                    : 'hover:bg-muted/50 border-transparent hover:border-muted'
+                }`}
               >
-                {option}
-              </Label>
+                <RadioGroupItem 
+                  value={index.toString()} 
+                  id={`option-${index}`}
+                  className="w-5 h-5"
+                />
+                <Label 
+                  htmlFor={`option-${index}`} 
+                  className="flex-grow cursor-pointer text-lg"
+                >
+                  {option}
+                </Label>
+              </div>
             </div>
           ))}
         </div>

@@ -57,13 +57,3 @@
   transform: translateY(-10px);
   transition: opacity 300ms, transform 300ms;
 }
-
-@import url('https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900');
-
-.loading-page {
-  font-family: 'Roboto', sans-serif;
-}
-
-.loading-page .counter {
-  overflow: hidden;
-}
